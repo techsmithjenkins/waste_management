@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WMS | Access Portal</title>
+    <link rel="icon" type="image/png" href="assets/logo.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            /* REFINED GRADIENT: Softer Slate to Vibrant Emerald */
+            background-image: linear-gradient(135deg, #334155 0%, #059669 100%);
+            background-size: cover;
+            background-attachment: fixed;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .fade-in {
+            animation: fadeIn 0.8s ease-out forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Smooth Transition for the Sign Up Fields */
+        #nameField {
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: all 0.4s ease-in-out;
+        }
+
+        #nameField.show {
+            max-height: 100px;
+            opacity: 1;
+            margin-bottom: 1.25rem;
+            /* space-y-5 equivalent */
+        }
+
+        /* Remove default eye icon in Edge/IE */
+        input::-ms-reveal,
+        input::-ms-clear {
+            display: none;
+        }
+    </style>
+</head>
+
+<body class="flex items-center justify-center h-screen font-sans p-4">
+
+    <div class="glass-card w-full max-w-md p-8 rounded-2xl shadow-2xl fade-in relative overflow-hidden">
+
+        <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-emerald-400 to-green-600"></div>
+
+        <div class="text-center mb-8 mt-2">
+            <div
+                class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 mb-4 shadow-sm border border-emerald-50">
+                <img src="assets/logo.png" alt="WMS Logo"
+                    class="w-24 h-24 mb-4 object-contain drop-shadow-lg hover:scale-110 transition-transform duration-300">
+            </div>
+            <h1 class="text-3xl font-bold text-slate-800 tracking-tight">WMS <span class="text-emerald-600">Core</span>
+            </h1>
+            <p id="pageTitle" class="text-sm text-slate-500 mt-1 font-medium">Intelligent Waste Management System</p>
+        </div>
+
+        <form id="authForm" class="block">
+
+            <div id="nameField">
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-user text-slate-400"></i>
+                    </div>
+                    <input id="fullName" type="text" placeholder="Full Legal Name"
+                        class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all shadow-sm">
+                </div>
+            </div>
+
+            <div class="relative mb-5">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i class="fas fa-envelope text-slate-400"></i>
+                </div>
+                <input id="email" type="email" placeholder="Access ID (Email)"
+                    class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all shadow-sm">
+            </div>
+
+            <div class="relative mb-5">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i class="fas fa-lock text-slate-400"></i>
+                </div>
+                <input id="password" type="password" placeholder="Passcode"
+                    class="w-full pl-10 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all shadow-sm">
+                <button type="button" onclick="togglePassword()"
+                    class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-emerald-600 transition cursor-pointer focus:outline-none">
+                    <i id="eyeIcon" class="fas fa-eye"></i>
+                </button>
+            </div>
+
+            <button type="button" id="submitBtn" onclick="handleAuth()"
+                class="group w-full bg-gradient-to-r from-emerald-500 to-green-600 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-2">
+                <span>Initialize Session</span>
+                <i class="fas fa-arrow-right transition-transform group-hover:translate-x-1"></i>
+            </button>
+        </form>
+
+        <div id="feedback" class="text-center text-sm mt-4 min-h-[20px] font-medium text-slate-500">
+            <span class="opacity-70">Restricted Access • Authorized Personnel Only</span>
+        </div>
+
+        <div class="mt-6 bg-gradient-to-r from-emerald-300 to-green-300 p-1 rounded-xl flex shadow-inner">
+            <button onclick="switchMode('login')" id="tabLogin"
+                class="flex-1 py-2 rounded-lg text-sm font-bold shadow-sm bg-white text-slate-800 transition-all duration-300">
+                Sign In
+            </button>
+            <button onclick="switchMode('signup')" id="tabSignup"
+                class="flex-1 py-2 rounded-lg text-sm font-bold text-slate-500 hover:text-slate-700 transition-all duration-300">
+                Sign Up
+            </button>
+        </div>
+
+    </div>
+
+    <div class="fixed bottom-4 right-4 text-white/40 text-xs font-mono">
+        System v2.1 | Secure Connection
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/app.js"></script>
+
+    <script>
+        // 1. Password Toggle
+        function togglePassword() {
+            const input = document.getElementById('password');
+            const icon = document.getElementById('eyeIcon');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        }
+
+        // 2. UI Mode Switcher
+        let isSignUpMode = false;
+
+        function switchMode(mode) {
+            const nameField = document.getElementById('nameField');
+            const btn = document.getElementById('submitBtn');
+            const tabLogin = document.getElementById('tabLogin');
+            const tabSignup = document.getElementById('tabSignup');
+            const pageTitle = document.getElementById('pageTitle');
+
+            if (mode === 'signup') {
+                isSignUpMode = true;
+                // UI Changes
+                nameField.classList.add('show');
+                btn.innerText = "Create Secure Account";
+                pageTitle.innerText = "New Resident Registration";
+                // Tab Styles
+                tabSignup.classList.add('bg-white', 'text-slate-800', 'shadow-sm');
+                tabSignup.classList.remove('text-slate-500');
+                tabLogin.classList.remove('bg-white', 'text-slate-800', 'shadow-sm');
+                tabLogin.classList.add('text-slate-500');
+            } else {
+                isSignUpMode = false;
+                // UI Changes
+                nameField.classList.remove('show');
+                btn.innerText = "Initialize Session";
+                pageTitle.innerText = "Intelligent Waste Management System";
+                // Tab Styles
+                tabLogin.classList.add('bg-white', 'text-slate-800', 'shadow-sm');
+                tabLogin.classList.remove('text-slate-500');
+                tabSignup.classList.remove('bg-white', 'text-slate-800', 'shadow-sm');
+                tabSignup.classList.add('text-slate-500');
+            }
+        }
+
+        // Expose mode to app.js
+        window.getAuthMode = () => isSignUpMode;
+
+        // Enter Key Support
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Enter') handleAuth();
+        });
+    </script>
+</body>
+
+</html>

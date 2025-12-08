@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WMS | Driver Console</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+        .modal-overlay { background-color: rgba(15, 23, 42, 0.9); }
+        button { touch-action: manipulation; }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex flex-col">
+
+    <nav class="glass sticky top-0 z-30 bg-amber-50 border-b-2 border-amber-400 px-6 py-4 flex justify-between items-center shadow-sm">
+        <div class="flex items-center gap-3">
+            <div class="bg-amber-500 text-white p-2 rounded-lg font-bold shadow-lg shadow-amber-500/30">WMS</div>
+            <div>
+                <h1 class="font-bold text-amber-600 leading-tight">Driver Console</h1>
+                <p class="text-[10px] text-slate-500 uppercase tracking-wider font-bold">Fleet Operations</p>
+            </div>
+        </div>
+        <button onclick="logout()" class="text-red-500 hover:text-red-700 font-bold text-sm flex items-center gap-2 transition bg-white px-3 py-1.5 rounded-full border border-slate-200 shadow-sm">
+            <i class="fas fa-sign-out-alt"></i> <span class="hidden sm:inline">Log Out</span>
+        </button>
+    </nav>
+
+    <main class="flex-grow max-w-3xl mx-auto w-full p-4 sm:p-6 pb-24">
+        
+        <div class="flex justify-between items-end mb-6">
+            <div>
+                <h2 class="text-2xl font-bold text-slate-700">
+                    Hello, <span id="driverName" class="text-amber-600">Driver</span>
+                </h2>
+                <p class="text-slate-500 text-sm mt-1">Here is your active route sorted by urgency.</p>
+            </div>
+            <div class="bg-white px-3 py-1 rounded-full shadow-sm border border-green-200 flex items-center gap-2">
+                <span class="h-2.5 w-2.5 rounded-full bg-green-500 animate-pulse"></span>
+                <span class="text-xs font-bold text-green-700 uppercase">Online</span>
+            </div>
+        </div>
+
+        <div id="driverGrid" class="space-y-4">
+            <div class="flex flex-col items-center justify-center py-12 text-slate-400 bg-white rounded-2xl border border-slate-200 shadow-sm">
+                <i class="fas fa-satellite-dish animate-pulse text-3xl mb-3 text-slate-300"></i>
+                <p>Establishing link with dispatch...</p>
+            </div>
+        </div>
+
+    </main>
+
+    <div id="reportModal" class="hidden fixed inset-0 z-50 flex items-center justify-center modal-overlay px-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+            <div class="p-5 border-b border-slate-100 bg-red-50 flex justify-between items-center">
+                <h3 class="font-bold text-lg text-red-700"><i class="fas fa-exclamation-circle mr-2"></i>Report Issue</h3>
+                <button onclick="toggleReportModal()" class="text-slate-400 hover:text-red-500 text-xl">×</button>
+            </div>
+            <div class="p-6 space-y-4">
+                <p class="text-sm text-slate-600">Why can't this pickup be completed?</p>
+                <input type="hidden" id="reportPickupId">
+                <textarea id="reportReason" rows="3" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none" placeholder="e.g., Bin blocked by car, Bin damaged..."></textarea>
+                <button onclick="submitReport()" class="w-full bg-red-600 text-white py-3 rounded-lg font-bold hover:bg-red-700 transition shadow-lg shadow-red-500/30">
+                    Submit Report
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/driver.js"></script>
+</body>
+</html>

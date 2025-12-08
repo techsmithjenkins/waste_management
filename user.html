@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WMS | Resident Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+        .modal-overlay { background-color: rgba(6, 78, 59, 0.8); }
+        button { touch-action: manipulation; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col">
+
+    <nav class="glass sticky top-0 z-30 bg-emerald-50 border-b-2 border-emerald-500 px-6 py-4 flex justify-between items-center shadow-sm">
+        <div class="flex items-center gap-3">
+            <div class="bg-emerald-600 text-white p-2 rounded-lg font-bold shadow-lg shadow-emerald-500/30">WMS</div>
+            <div>
+                <h1 class="font-bold text-emerald-700 leading-tight">Resident Portal</h1>
+                <p class="text-[10px] text-slate-500 uppercase tracking-wider font-bold">My Home Dashboard</p>
+            </div>
+        </div>
+        <button onclick="logout()" class="text-red-500 hover:text-red-700 font-bold text-sm flex items-center gap-2 transition bg-white px-3 py-1.5 rounded-full border border-slate-200 shadow-sm">
+            <i class="fas fa-sign-out-alt"></i> <span class="hidden sm:inline">Log Out</span>
+        </button>
+    </nav>
+
+    <main class="flex-grow max-w-5xl mx-auto w-full p-6">
+        
+        <div class="mb-8 flex flex-col md:flex-row justify-between items-end gap-4">
+            <div>
+                <h2 class="text-3xl font-bold text-slate-800">
+                    Welcome home, <span id="userName" class="text-emerald-600">Resident</span>
+                </h2>
+                <p class="text-slate-500 mt-1">Manage your waste collection and monitor bin levels.</p>
+            </div>
+            
+            <div class="flex gap-4">
+                <div class="bg-white p-3 rounded-xl shadow-sm border border-slate-100 flex items-center gap-3">
+                    <div class="bg-blue-100 text-blue-600 w-10 h-10 rounded-full flex items-center justify-center"><i class="fas fa-trash-alt"></i></div>
+                    <div>
+                        <p class="text-[10px] uppercase font-bold text-slate-400">Total Bins</p>
+                        <p class="font-bold text-lg" id="totalBinsCount">0</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="userGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-20">
+            <div class="col-span-full flex flex-col items-center justify-center py-12 text-slate-400 bg-white rounded-2xl border border-slate-200 shadow-sm">
+                <i class="fas fa-circle-notch animate-spin text-3xl mb-3 text-emerald-300"></i>
+                <p>Syncing your smart bins...</p>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-400">
+        <p>&copy; 2025 Intelligent Waste Management System</p>
+    </footer>
+
+    <script src="js/config.js"></script>
+    <script src="js/user.js"></script>
+</body>
+</html>

@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WMS | Command Center</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .glass {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+        }
+
+        .modal-overlay {
+            background-color: rgba(15, 23, 42, 0.8);
+        }
+
+        .gradient-header {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        }
+    </style>
+</head>
+
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen">
+
+    <nav
+        class="glass sticky top-0 z-30 bg-green-200 border-b-2 border-green-500 px-6 py-4 flex justify-between items-center shadow-sm">
+        <div class="flex items-center gap-3">
+            <div class="bg-green-600 text-white p-2 rounded-lg font-bold shadow-lg shadow-green-500/30">WMS</div>
+            <div>
+                <h1 class="font-bold text-green-600 leading-tight">Command Center</h1>
+                <p class="text-[10px] text-slate-500 uppercase tracking-wider font-bold">Admin Console</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-4">
+
+            <button onclick="openOperationsCenter()"
+                class="relative p-2 mr-2 text-slate-600 hover:text-blue-600 transition group">
+                <i id="bellIcon" class="fas fa-bell text-2xl"></i>
+                <span id="notificationCount"
+                    class="absolute top-0 right-0 h-5 w-5 bg-red-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white hidden shadow-sm">0</span>
+            </button>
+            <div class="h-6 w-px bg-green-500 mx-2"></div>
+
+            <button onclick="toggleModal('userModal')"
+                class="flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-blue-600 transition bg-white px-3 py-1.5 rounded-full border border-slate-200 shadow-sm hover:shadow-md">
+                <i class="fas fa-user-plus"></i> Add Staff
+            </button>
+            <button onclick="toggleModal('binModal')"
+                class="flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-blue-600 transition bg-white px-3 py-1.5 rounded-full border border-slate-200 shadow-sm hover:shadow-md">
+                <i class="fas fa-trash"></i> Add Bin
+            </button>
+            <button onclick="openStaffManager()"
+                class="flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-blue-600 transition bg-white px-3 py-1.5 rounded-full border border-slate-200 shadow-sm hover:shadow-md">
+                <i class="fas fa-users-cog"></i> Manage Staff
+            </button>
+            <button onclick="openAssignmentManager()"
+                class="flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-blue-600 transition bg-white px-3 py-1.5 rounded-full border border-slate-200 shadow-sm hover:shadow-md">
+                <i class="fas fa-users-cog"></i> Manage Assignments
+            </button>
+            <div class="h-6 w-px bg-green-500 mx-2"></div>
+            <button onclick="logout()" class="text-red-500 hover:text-red-700 font-bold text-sm">Log Out</button>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto p-6">
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-gradient-to-br from-blue-500 to-blue-600 p-5 rounded-xl shadow-lg text-white">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-bold text-blue-100 uppercase opacity-80">Total Bins</p>
+                        <h3 class="text-3xl font-bold mt-1" id="stat-total">0</h3>
+                    </div>
+                    <i class="fas fa-trash-alt text-blue-200 text-3xl opacity-50"></i>
+                </div>
+            </div>
+
+            <div class="bg-gradient-to-br from-red-500 to-red-600 p-5 rounded-xl shadow-lg text-white">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-bold text-red-100 uppercase opacity-80">Critical Status</p>
+                        <h3 class="text-3xl font-bold mt-1" id="stat-critical">0</h3>
+                    </div>
+                    <i class="fas fa-exclamation-triangle text-red-200 text-3xl opacity-50"></i>
+                </div>
+            </div>
+
+            <div class="bg-gradient-to-br from-amber-400 to-amber-500 p-5 rounded-xl shadow-lg text-white">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-bold text-amber-100 uppercase opacity-80">Drivers Active</p>
+                        <h3 class="text-3xl font-bold mt-1" id="stat-drivers">0</h3>
+                    </div>
+                    <i class="fas fa-truck text-amber-100 text-3xl opacity-50"></i>
+                </div>
+            </div>
+
+            <div
+                class="bg-slate-800 p-5 rounded-xl shadow-lg text-white flex items-center justify-between border border-slate-700">
+                <div>
+                    <p class="text-xs font-bold text-slate-400 uppercase">IoT Network</p>
+                    <p class="text-sm font-bold mt-1 text-green-400">● Online</p>
+                </div>
+                <button onclick="simulateSensors()" id="simBtn"
+                    class="bg-slate-700 hover:bg-slate-600 p-3 rounded-full transition shadow-inner">
+                    <i class="fas fa-sync-alt text-blue-400"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="flex flex-col md:flex-row justify-between items-end mb-6 gap-4">
+            <h2 class="text-xl font-bold text-slate-700">Live Bin Matrix</h2>
+            <div class="flex gap-3 bg-white p-1 rounded-lg border border-slate-200 shadow-sm">
+                <select id="cityFilter" onchange="loadDashboard()"
+                    class="text-sm border-none text-slate-600 font-bold bg-transparent cursor-pointer outline-none px-2 py-1">
+                    <option value="all">🌍 All Regions</option>
+                    <option value="Accra">Accra</option>
+                    <option value="Kumasi">Kumasi</option>
+                    <option value="Tamale">Tamale</option>
+                </select>
+                <div class="w-px bg-slate-200 my-1"></div>
+                <select id="statusFilter" onchange="loadDashboard()"
+                    class="text-sm border-none text-slate-600 font-bold bg-transparent cursor-pointer outline-none px-2 py-1">
+                    <option value="all">All Statuses</option>
+                    <option value="critical">🔴 Critical Only</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="binsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-20">
+        </div>
+    </main>
+
+    <div id="userModal" class="hidden fixed inset-0 z-50 flex items-center justify-center modal-overlay">
+        <div class="bg-white rounded-2xl shadow-2xl w-96 overflow-hidden">
+            <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <h3 class="font-bold text-lg text-slate-800">Register Personnel</h3>
+                <button onclick="toggleModal('userModal')" class="text-slate-400 hover:text-red-500"><i
+                        class="fas fa-times"></i></button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div class="text-xs text-blue-600 bg-blue-50 p-2 rounded border border-blue-100">
+                    <i class="fas fa-info-circle"></i> This creates a pre-approved profile. The user must Sign Up with
+                    this email to access it.
+                </div>
+                <input id="newUserName" type="text" placeholder="Full Name"
+                    class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm focus:border-blue-500 outline-none">
+                <input id="newUserEmail" type="email" placeholder="Email Address"
+                    class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm focus:border-blue-500 outline-none">
+                <select id="newUserRole"
+                    class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm focus:border-blue-500 outline-none">
+                    <option value="driver">Fleet Driver</option>
+                    <option value="user">Resident (User)</option>
+                </select>
+                <button onclick="createUser()"
+                    class="w-full bg-slate-800 text-white py-3 rounded-lg font-bold hover:bg-slate-700 transition">Create
+                    Profile</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="binModal" class="hidden fixed inset-0 z-50 flex items-center justify-center modal-overlay">
+        <div class="bg-white rounded-2xl shadow-2xl w-96 overflow-hidden">
+            <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <h3 class="font-bold text-lg text-slate-800">Deploy New Asset</h3>
+                <button onclick="toggleModal('binModal')" class="text-slate-400 hover:text-red-500"><i
+                        class="fas fa-times"></i></button>
+            </div>
+            <div class="p-6 space-y-4">
+                <input id="newBinName" type="text" placeholder="Location Name"
+                    class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm">
+                <select id="newBinCity" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm">
+                    <option value="Accra">Accra</option>
+                    <option value="Kumasi">Kumasi</option>
+                    <option value="Tamale">Tamale</option>
+                </select>
+                <div class="flex gap-2">
+                    <input id="newBinLat" type="number" step="0.0001" placeholder="Lat (5.603)"
+                        class="w-1/2 bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm">
+                    <input id="newBinLng" type="number" step="0.0001" placeholder="Lng (-0.187)"
+                        class="w-1/2 bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm">
+                </div>
+                <button onclick="createBin()"
+                    class="w-full bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 transition">Deploy
+                    Bin</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="mapModal" class="hidden fixed inset-0 z-50 flex items-center justify-center modal-overlay">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden relative">
+            <button onclick="closeMap()"
+                class="absolute top-4 right-4 bg-white text-slate-800 px-3 py-1 rounded shadow z-10 font-bold hover:bg-slate-100">Close</button>
+            <div id="mapFrameContainer" class="w-full h-[500px] bg-slate-200">
+            </div>
+        </div>
+    </div>
+
+    <div id="staffModal" class="hidden fixed inset-0 z-50 flex items-center justify-center modal-overlay">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl overflow-hidden flex flex-col max-h-[85vh]">
+            <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <div>
+                    <h3 class="font-bold text-xl text-slate-800">Fleet Personnel</h3>
+                    <p class="text-xs text-slate-500">Live Driver Status & Locations</p>
+                </div>
+                <button onclick="toggleModal('staffModal')" class="text-slate-400 hover:text-red-500"><i
+                        class="fas fa-times text-xl"></i></button>
+            </div>
+            <div class="p-0 overflow-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-slate-100 text-slate-500 text-xs uppercase sticky top-0">
+                        <tr>
+                            <th class="p-4">Driver Name</th>
+                            <th class="p-4">Vehicle ID</th>
+                            <th class="p-4">Status</th>
+                            <th class="p-4">Live Coordinates</th>
+                        </tr>
+                    </thead>
+                    <tbody id="driverListBody" class="divide-y divide-slate-100">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="assignmentModal" class="hidden fixed inset-0 z-50 flex items-center justify-center modal-overlay">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl overflow-hidden flex flex-col max-h-[85vh]">
+            <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <div>
+                    <h3 class="font-bold text-xl text-slate-800">Resident Asset Management</h3>
+                    <p class="text-xs text-slate-500">Assign multiple bins to residents</p>
+                </div>
+                <button onclick="toggleModal('assignmentModal')" class="text-slate-400 hover:text-red-500"><i
+                        class="fas fa-times text-xl"></i></button>
+            </div>
+            <div class="p-0 overflow-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-slate-100 text-slate-500 text-xs uppercase sticky top-0">
+                        <tr>
+                            <th class="p-4 w-1/4">Resident</th>
+                            <th class="p-4 w-1/4">Email</th>
+                            <th class="p-4 w-1/3">Assigned Bins</th>
+                            <th class="p-4 text-right">Add New Bin</th>
+                        </tr>
+                    </thead>
+                    <tbody id="residentListBody" class="divide-y divide-slate-100">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="opsModal" class="hidden fixed inset-0 z-50 flex items-center justify-center modal-overlay p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl h-[80vh] overflow-hidden flex flex-col">
+        <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+            <div>
+                <h3 class="font-bold text-xl text-slate-800"><i class="fas fa-layer-group text-blue-500 mr-2"></i>Operations Center</h3>
+                <p class="text-xs text-slate-500">Manage inbound requests and field reports</p>
+            </div>
+            <button onclick="toggleModal('opsModal')" class="text-slate-400 hover:text-red-500"><i class="fas fa-times text-xl"></i></button>
+        </div>
+        
+        <div class="flex-1 overflow-hidden flex flex-col md:flex-row">
+            <div class="flex-1 border-r border-slate-100 flex flex-col">
+                <div class="p-4 bg-yellow-50 border-b border-yellow-100">
+                    <h4 class="font-bold text-yellow-800 text-sm uppercase tracking-wide"><i class="fas fa-hand-paper mr-2"></i> Requests</h4>
+                </div>
+                <div id="requestsList" class="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50"></div>
+            </div>
+            <div class="flex-1 flex flex-col">
+                <div class="p-4 bg-red-50 border-b border-red-100">
+                    <h4 class="font-bold text-red-800 text-sm uppercase tracking-wide"><i class="fas fa-exclamation-circle mr-2"></i> Issues</h4>
+                </div>
+                <div id="reportsList" class="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <script src="js/config.js"></script>
+    <script src="js/admin.js"></script>
+</body>
+
+</html>
